@@ -1,27 +1,28 @@
 import pandas as pd
+
 df = pd.read_csv("titanic_synthetic.csv")
 
-# Counting unique values
-unique_counts = df.nunique()
-
-# Format / dtype of each column
-dtypes = df.dtypes
-
-# Example conversions: 'pclass' to int16, 'survived' to int8
-df["pclass"] = df["pclass"].astype("int16")
-df["survived"] = df["survived"].astype("int8")
-
-# Identify missing values (inject an example)
-df.loc[0,"age"] = None
-missing_before = df.isna().sum()
-
-# Fill missing: numeric -> median; categorical -> mode
-for c in df.columns:
-    if pd.api.types.is_numeric_dtype(df[c]):
-        df[c] = df[c].fillna(df[c].median())
-    else:
-        mode = df[c].mode()
-        df[c] = df[c].fillna(mode.iloc[0] if not mode.empty else "Unknown")
-
-missing_after = df.isna().sum()
-print(unique_counts, "\n", dtypes, "\n", "Missing before:\n", missing_before, "\nMissing after:\n", missing_after)
+print('Unique counts per column:')
+print(df.nunique())
+print('\nColumn dtypes:')
+print(df.dtypes)
+# Convert a column dtype example (if numeric stored as object)
+for col in df.columns:
+    if df[col].dtype == object:
+        try:
+            df[col] = pd.to_numeric(df[col])
+            print(f'Converted {col} to numeric')
+        except:
+            pass
+# Missing values
+print('\nMissing values per column:')
+print(df.isna().sum())
+# Fill missing values: numeric -> mean, object -> mode
+for col in df.columns:
+    if df[col].isna().sum()>0:
+        if df[col].dtype in [np.float64, np.int64]:
+            df[col].fillna(df[col].mean(), inplace=True)
+        else:
+            df[col].fillna(df[col].mode().iloc[0] if not df[col].mode().empty else 'Unknown', inplace=True)
+print('\nAfter filling, missing values per column:')
+print(df.isna().sum())
