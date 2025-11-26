@@ -1,28 +1,24 @@
 import pandas as pd
+import numpy as np
 
-df = pd.read_csv("telecom_churn_synthetic.csv")
-
-summary = {}
-
-for col in df.columns:
-    s = df[col]
-
-    if pd.api.types.is_numeric_dtype(s):
-        summary[col] = {
-            "min": s.min(),
-            "max": s.max(),
-            "mean": s.mean(),
-            "std": s.std(),
-            "var": s.var(),
-            "25%": s.quantile(0.25),
-            "50%": s.quantile(0.5),
-            "75%": s.quantile(0.75)
-        }
-    else:
-        summary[col] = {
-            "unique values": s.nunique(),
-            "most frequent": s.mode()[0]
-        }
-
-summary_df = pd.DataFrame(summary).T
-print(summary_df)
+df = pd.read_csv('telecom_churn_synthetic.csv')
+print('Loaded shape', df.shape)
+# For each numeric column compute min, max, mean, range, std, var, percentiles
+numeric = df.select_dtypes(include=[np.number]).columns.tolist()
+print('Numeric columns:', numeric)
+stats = {}
+for col in numeric:
+    coldata = df[col].dropna()
+    stats[col] = {
+        'min': coldata.min(),
+        'max': coldata.max(),
+        'mean': coldata.mean(),
+        'range': coldata.max() - coldata.min(),
+        'std': coldata.std(),
+        'var': coldata.var(),
+        '25%': coldata.quantile(0.25),
+        '50%': coldata.quantile(0.5),
+        '75%': coldata.quantile(0.75)
+    }
+stats_df = pd.DataFrame(stats).T
+print(stats_df)
