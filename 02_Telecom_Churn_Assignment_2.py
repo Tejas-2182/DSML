@@ -1,22 +1,28 @@
 import pandas as pd
-import numpy as np
 
 df = pd.read_csv("telecom_churn_synthetic.csv")
 
-def stats_for_series(s: pd.Series):
+summary = {}
+
+for col in df.columns:
+    s = df[col]
+
     if pd.api.types.is_numeric_dtype(s):
-        return {
+        summary[col] = {
             "min": s.min(),
             "max": s.max(),
             "mean": s.mean(),
-            "range": s.max() - s.min(),
-            "std": s.std(ddof=1),
-            "var": s.var(ddof=1),
-            "p25": s.quantile(0.25),
-            "p50": s.quantile(0.5),
-            "p75": s.quantile(0.75),
+            "std": s.std(),
+            "var": s.var(),
+            "25%": s.quantile(0.25),
+            "50%": s.quantile(0.5),
+            "75%": s.quantile(0.75)
         }
-    return {"unique": s.nunique(), "top": s.mode().iloc[0] if not s.mode().empty else None}
+    else:
+        summary[col] = {
+            "unique values": s.nunique(),
+            "most frequent": s.mode()[0]
+        }
 
-summary = pd.DataFrame({c: stats_for_series(df[c]) for c in df.columns}).T
-print(summary)
+summary_df = pd.DataFrame(summary).T
+print(summary_df)
